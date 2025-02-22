@@ -55,9 +55,14 @@
             max-width: 300px;
         }
 
-        .option:hover {
+        .option:hover:not(:disabled) {
             background: linear-gradient(135deg, #0056b3, #003d80);
             transform: scale(1.05);
+        }
+
+        .option:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
 
         #result, #timer, #score {
@@ -81,6 +86,39 @@
             background: linear-gradient(135deg, #4CAF50, #45a049);
             border-radius: 10px;
             transition: width 0.5s ease;
+        }
+
+        /* Game Over Screen */
+        #game-over {
+            display: none; /* Hidden by default */
+            text-align: center;
+        }
+
+        #game-over h2 {
+            color: #ff4444;
+            font-size: 28px;
+        }
+
+        #game-over p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        #restart-button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        #restart-button:hover {
+            background: linear-gradient(135deg, #0056b3, #003d80);
+            transform: scale(1.05);
         }
 
         /* Animations */
@@ -127,6 +165,13 @@
         </div>
     </div>
 
+    <!-- Game Over Screen -->
+    <div id="game-over">
+        <h2>🎉 Game Selesai!</h2>
+        <p>Skor akhir kamu: <span id="final-score">0</span></p>
+        <button id="restart-button">Main Lagi</button>
+    </div>
+
     <script>
         const questions = [
             {
@@ -159,8 +204,10 @@
         let score = 0;
         let timeLeft = 10;
         let timer;
+        let isOptionSelected = false; // Flag to track if an option is selected
 
         function loadQuestion() {
+            isOptionSelected = false; // Reset flag for new question
             clearInterval(timer);
             timeLeft = 10;
             document.getElementById("time-left").innerText = timeLeft;
@@ -176,7 +223,12 @@
                 const button = document.createElement("button");
                 button.classList.add("option");
                 button.innerText = option.text;
-                button.onclick = () => checkAnswer(option.correct);
+                button.onclick = () => {
+                    if (!isOptionSelected) { // Prevent multiple clicks
+                        isOptionSelected = true;
+                        checkAnswer(option.correct);
+                    }
+                };
                 optionsContainer.appendChild(button);
             });
         }
@@ -188,12 +240,14 @@
                 clearInterval(timer);
                 document.getElementById("result").innerText = "⏳ Waktu habis! Coba lagi!";
                 document.getElementById("result").style.color = "#ff4444";
+                disableOptions();
                 setTimeout(nextQuestion, 2000);
             }
         }
 
         function checkAnswer(isCorrect) {
             clearInterval(timer);
+            disableOptions(); // Disable all options after one is clicked
             const result = document.getElementById("result");
             if (isCorrect) {
                 result.innerText = "✅ Jawaban benar! Kamu telah melakukan debugging dengan baik!";
@@ -209,6 +263,13 @@
             setTimeout(nextQuestion, 2000);
         }
 
+        function disableOptions() {
+            const options = document.querySelectorAll(".option");
+            options.forEach(option => {
+                option.disabled = true; // Disable all options
+            });
+        }
+
         function updateProgress() {
             const progressBar = document.getElementById("progress-bar");
             const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
@@ -222,10 +283,29 @@
                 document.getElementById("game-container").style.animation = "";
                 loadQuestion();
             } else {
-                document.getElementById("result").innerText = "🎉 Game selesai! Skor akhir: " + score;
-                document.getElementById("result").style.color = "#007bff";
+                showGameOver();
             }
         }
+
+        function showGameOver() {
+            // Hide game container
+            document.getElementById("game-container").style.display = "none";
+            // Show game over screen
+            document.getElementById("game-over").style.display = "block";
+            // Display final score
+            document.getElementById("final-score").innerText = score;
+        }
+
+        // Restart game
+        document.getElementById("restart-button").addEventListener("click", () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("score-value").innerText = score;
+            document.getElementById("progress-bar").style.width = "0%";
+            document.getElementById("game-over").style.display = "none";
+            document.getElementById("game-container").style.display = "block";
+            loadQuestion();
+        });
 
         loadQuestion();
     </script>
