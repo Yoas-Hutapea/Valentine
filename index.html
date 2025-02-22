@@ -1,22 +1,233 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will You Be My Valentine?</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Debugging Life: Fix the Errors!</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #e0f7fa; /* Light blue background for a calming effect */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .option {
+            display: block;
+            margin: 10px auto;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s ease, background 0.3s ease;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .option:hover {
+            background: linear-gradient(135deg, #0056b3, #003d80);
+            transform: scale(1.05);
+        }
+
+        #result, #timer, #score {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #progress {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 10px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 20px;
+            }
+
+            .question {
+                font-size: 16px;
+            }
+
+            .option {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Will you be my Valentine?</h1>
-        <div class="buttons">
-            <button class="yes-button" onclick="handleYesClick()">Yes</button>
-            <button class="no-button" onclick="handleNoClick()">No</button>
-        </div>
-        <div class="gif_container">
-            <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW5lenZyZHI5OXM2eW95b3pmMG40cWVrMDhtNjVuM3A4dGNxa2g2dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/VM1fcpu2bKs1e2Kdbj/giphy.gif" alt="Cute GIF">
+    <div id="game-container">
+        <h2>Debugging Life: Fix the Errors!</h2>
+        <p id="timer">⏳ Waktu: <span id="time-left">10</span> detik</p>
+        <p class="question" id="question-text">Loading...</p>
+        <div id="options"></div>
+        <p id="result"></p>
+        <p id="score">Skor: <span id="score-value">0</span></p>
+        <div id="progress">
+            <div id="progress-bar"></div>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const questions = [
+            {
+                text: "Aku sibuk kerja sampai lupa waktu buat Tuhan. Apa yang harus aku lakukan?",
+                options: [
+                    { text: "Kerja lebih keras lagi", correct: false },
+                    { text: "Membaca Firman Tuhan dan mengatur waktu lebih baik", correct: true },
+                    { text: "Tunda ibadah sampai ada waktu luang", correct: false }
+                ]
+            },
+            {
+                text: "Aku sering kecewa karena teman-temanku nggak sesuai ekspektasi. Apa yang harus aku lakukan?",
+                options: [
+                    { text: "Berdoa dan belajar mengampuni", correct: true },
+                    { text: "Menjauhi semua orang", correct: false },
+                    { text: "Membalas mereka dengan sikap yang sama", correct: false }
+                ]
+            },
+            {
+                text: "Aku sering jatuh dalam dosa yang sama berulang kali. Apa solusinya?",
+                options: [
+                    { text: "Introspeksi dan jauhi penyebab dosa itu", correct: true },
+                    { text: "Nggak usah dipikirin, nanti juga hilang sendiri", correct: false },
+                    { text: "Biarin aja, yang penting masih hidup", correct: false }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 10;
+        let timer;
+
+        function loadQuestion() {
+            clearInterval(timer);
+            timeLeft = 10;
+            document.getElementById("time-left").innerText = timeLeft;
+            timer = setInterval(countdown, 1000);
+            
+            const question = questions[currentQuestionIndex];
+            document.getElementById("question-text").innerText = question.text;
+            
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.classList.add("option");
+                button.innerText = option.text;
+                button.onclick = () => checkAnswer(option.correct);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function countdown() {
+            timeLeft--;
+            document.getElementById("time-left").innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                document.getElementById("result").innerText = "⏳ Waktu habis! Coba lagi!";
+                document.getElementById("result").style.color = "#ff4444";
+                setTimeout(nextQuestion, 2000);
+            }
+        }
+
+        function checkAnswer(isCorrect) {
+            clearInterval(timer);
+            const result = document.getElementById("result");
+            if (isCorrect) {
+                result.innerText = "✅ Jawaban benar! Kamu telah melakukan debugging dengan baik!";
+                result.style.color = "#4CAF50";
+                score += 10;
+                document.getElementById("score-value").innerText = score;
+                updateProgress();
+            } else {
+                result.innerText = "❌ Jawaban salah! Coba pikirkan lagi apa solusi terbaiknya.";
+                result.style.color = "#ff4444";
+                document.getElementById("game-container").style.animation = "shake 0.5s";
+            }
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById("progress-bar");
+            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = progressPercentage + "%";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById("result").innerText = "";
+                document.getElementById("game-container").style.animation = "";
+                loadQuestion();
+            } else {
+                document.getElementById("result").innerText = "🎉 Game selesai! Skor akhir: " + score;
+                document.getElementById("result").style.color = "#007bff";
+            }
+        }
+
+        loadQuestion();
+    </script>
 </body>
 </html>
