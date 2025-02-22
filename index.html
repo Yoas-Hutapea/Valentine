@@ -1,313 +1,577 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debugging Life: Fix the Errors!</title>
-    <style>
-        /* General Styling */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background-color: #e0f7fa; /* Light blue background for a calming effect */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        #game-container {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 90%;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        h2 {
-            color: #007bff;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-
-        .question {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .option {
-            display: block;
-            margin: 10px auto;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 25px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s ease, background 0.3s ease;
-            width: 80%;
-            max-width: 300px;
-        }
-
-        .option:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0056b3, #003d80);
-            transform: scale(1.05);
-        }
-
-        .option:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        #result, #timer, #score {
-            margin-top: 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        #progress {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin-top: 20px;
-            overflow: hidden;
-        }
-
-        #progress-bar {
-            width: 0%;
-            height: 10px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        /* Game Over Screen */
-        #game-over {
-            display: none; /* Hidden by default */
-            text-align: center;
-        }
-
-        #game-over h2 {
-            color: #ff4444;
-            font-size: 28px;
-        }
-
-        #game-over p {
-            font-size: 18px;
-            color: #555;
-        }
-
-        #restart-button {
-            margin-top: 20px;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            transition: transform 0.2s ease, background 0.3s ease;
-        }
-
-        #restart-button:hover {
-            background: linear-gradient(135deg, #0056b3, #003d80);
-            transform: scale(1.05);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            75% { transform: translateX(-10px); }
-            100% { transform: translateX(0); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            h2 {
-                font-size: 20px;
-            }
-
-            .question {
-                font-size: 16px;
-            }
-
-            .option {
-                font-size: 14px;
-                padding: 10px 15px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spiritual Maze Plus</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-shadow: 2px 2px 4px #000;
+      font-size: 2.5rem;
+    }
+    #gameContainer {
+      position: relative;
+    }
+    canvas {
+      border: 4px solid #ffffff;
+      background-color: #22223b;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      max-width: 90vw;
+      max-height: 90vh;
+      margin-bottom: 15px;
+    }
+    #miniMap {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 2px solid #fff;
+      background: #22223b;
+    }
+    button.restart,
+    select.difficulty {
+      width: 140px;
+      height: 45px;
+      font-size: 18px;
+      background: linear-gradient(145deg, #f0a500, #ffcd3c);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #fff;
+      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2),
+        -4px -4px 8px rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease-in-out;
+      margin: 10px;
+    }
+    button.restart:hover,
+    select.difficulty:hover {
+      transform: scale(1.05);
+      box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3),
+        -6px -6px 12px rgba(255, 255, 255, 0.15);
+    }
+    button.restart:active,
+    select.difficulty:active {
+      transform: scale(0.98);
+      box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+    }
+    .joystick button {
+      width: 70px;
+      height: 70px;
+      font-size: 24px;
+      background: linear-gradient(145deg, #f0a500, #ffcd3c);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #fff;
+      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2),
+        -4px -4px 8px rgba(255, 255, 255, 0.1);
+      transition: all 0.15s ease-in-out;
+      margin: 5px;
+    }
+    .joystick button:hover {
+      transform: scale(1.1);
+    }
+    .joystick button:active {
+      transform: scale(0.95);
+      box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    #pauseMenu {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    #pauseMenu button {
+      margin: 10px;
+    }
+    .message {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+    #timer, #score, #highScore {
+      font-size: 1.1rem;
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <h2>Debugging Life: Fix the Errors!</h2>
-        <p id="timer">⏳ Waktu: <span id="time-left">10</span> detik</p>
-        <p class="question" id="question-text">Loading...</p>
-        <div id="options"></div>
-        <p id="result"></p>
-        <p id="score">Skor: <span id="score-value">0</span></p>
-        <div id="progress">
-            <div id="progress-bar"></div>
-        </div>
-    </div>
+  <h1>🛤️ Spiritual Maze Plus 🛤️</h1>
+  <p class="message">Cari jalan menuju cahaya!</p>
+  <p id="timer">Time: 00:00</p>
+  <p id="score">Score: 0</p>
+  <p id="highScore">High Score: 0</p>
 
-    <!-- Game Over Screen -->
-    <div id="game-over">
-        <h2>🎉 Game Selesai!</h2>
-        <p>Skor akhir kamu: <span id="final-score">0</span></p>
-        <button id="restart-button">Main Lagi</button>
-    </div>
+  <div>
+    <select class="difficulty" id="difficultySelector">
+      <option value="easy">Easy</option>
+      <option value="medium" selected>Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <button class="restart" onclick="initGame()">New Maze</button>
+    <button id="muteButton" onclick="toggleMute()">🔊</button>
+    <button id="pauseButton" onclick="togglePause()">⏸️</button>
+  </div>
 
-    <script>
-        const questions = [
-            {
-                text: "Aku sibuk kerja sampai lupa waktu buat Tuhan. Apa yang harus aku lakukan?",
-                options: [
-                    { text: "Kerja lebih keras lagi", correct: false },
-                    { text: "Membaca Firman Tuhan dan mengatur waktu lebih baik", correct: true },
-                    { text: "Tunda ibadah sampai ada waktu luang", correct: false }
-                ]
-            },
-            {
-                text: "Aku sering kecewa karena teman-temanku nggak sesuai ekspektasi. Apa yang harus aku lakukan?",
-                options: [
-                    { text: "Berdoa dan belajar mengampuni", correct: true },
-                    { text: "Menjauhi semua orang", correct: false },
-                    { text: "Membalas mereka dengan sikap yang sama", correct: false }
-                ]
-            },
-            {
-                text: "Aku sering jatuh dalam dosa yang sama berulang kali. Apa solusinya?",
-                options: [
-                    { text: "Introspeksi dan jauhi penyebab dosa itu", correct: true },
-                    { text: "Nggak usah dipikirin, nanti juga hilang sendiri", correct: false },
-                    { text: "Biarin aja, yang penting masih hidup", correct: false }
-                ]
-            }
+  <div id="gameContainer">
+    <canvas id="mazeCanvas"></canvas>
+    <canvas id="miniMap" width="150" height="150"></canvas>
+  </div>
+
+  <div id="pauseMenu">
+    <button onclick="togglePause()">Resume</button>
+    <button onclick="initGame()">Restart</button>
+  </div>
+
+  <div class="controls joystick">
+    <div class="row">
+      <button onclick="handleMove(0, -1)">🔼</button>
+    </div>
+    <div class="row">
+      <button onclick="handleMove(-1, 0)">◀️</button>
+      <button onclick="handleMove(1, 0)">▶️</button>
+    </div>
+    <div class="row">
+      <button onclick="handleMove(0, 1)">🔽</button>
+    </div>
+  </div>
+
+  <audio id="backsound" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+  </audio>
+  <audio id="moveSound">
+    <source src="https://www.soundjay.com/button/sounds/button-16.mp3" type="audio/mpeg" />
+  </audio>
+  <audio id="winSound">
+    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg" />
+  </audio>
+  <audio id="failSound">
+    <source src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    const canvas = document.getElementById("mazeCanvas");
+    const ctx = canvas.getContext("2d");
+    const miniMapCanvas = document.getElementById("miniMap");
+    const miniCtx = miniMapCanvas.getContext("2d");
+
+    const backsound = document.getElementById("backsound");
+    const moveSound = document.getElementById("moveSound");
+    const winSound = document.getElementById("winSound");
+    const failSound = document.getElementById("failSound");
+
+    let tileSize = 20;
+    let cols, rows;
+    let maze;
+    let difficulty = 'medium';
+    const difficultySettings = {
+      easy: { complexity: 0.8, speed: 8 },
+      medium: { complexity: 1, speed: 12 },
+      hard: { complexity: 1.2, speed: 16 }
+    };
+
+    let player, keyItem, door, enemy;
+    let animating = false;
+    const visionRadius = 3;
+    const moveDuration = 150;
+
+    let level = 1;
+    let startTime, timerInterval, score = 0;
+    let isMuted = false;
+    let isPaused = false;
+    let powerUps = [];
+
+    function initGame() {
+      difficulty = document.getElementById("difficultySelector").value;
+      resizeCanvas();
+      generateMaze();
+      placeObjects();
+      placePowerUps();
+      drawMaze();
+      backsound.play().catch(e => console.log("Backsound error:", e));
+      startTimer();
+      updateHighScore();
+    }
+
+    function resizeCanvas() {
+      let size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.7);
+      size = Math.floor(size / tileSize) * tileSize;
+      canvas.width = size;
+      canvas.height = size;
+      cols = canvas.width / tileSize;
+      rows = canvas.height / tileSize;
+    }
+
+    function generateMaze() {
+      maze = Array(rows)
+        .fill(0)
+        .map(() => Array(cols).fill(1));
+
+      function carve(x, y) {
+        maze[y][x] = 0;
+        let directions = [
+          [0, -2],
+          [0, 2],
+          [-2, 0],
+          [2, 0]
         ];
-
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let timeLeft = 10;
-        let timer;
-        let isOptionSelected = false; // Flag to track if an option is selected
-
-        function loadQuestion() {
-            isOptionSelected = false; // Reset flag for new question
-            clearInterval(timer);
-            timeLeft = 10;
-            document.getElementById("time-left").innerText = timeLeft;
-            timer = setInterval(countdown, 1000);
-            
-            const question = questions[currentQuestionIndex];
-            document.getElementById("question-text").innerText = question.text;
-            
-            const optionsContainer = document.getElementById("options");
-            optionsContainer.innerHTML = "";
-            
-            question.options.forEach((option, index) => {
-                const button = document.createElement("button");
-                button.classList.add("option");
-                button.innerText = option.text;
-                button.onclick = () => {
-                    if (!isOptionSelected) { // Prevent multiple clicks
-                        isOptionSelected = true;
-                        checkAnswer(option.correct);
-                    }
-                };
-                optionsContainer.appendChild(button);
-            });
+        directions.sort(() => Math.random() - 0.5 * difficultySettings[difficulty].complexity);
+        for (let [dx, dy] of directions) {
+          let nx = x + dx, ny = y + dy;
+          if (ny > 0 && ny < rows - 1 && nx > 0 && nx < cols - 1 && maze[ny][nx] === 1) {
+            maze[y + dy / 2][x + dx / 2] = 0;
+            carve(nx, ny);
+          }
         }
+      }
+      carve(1, 1);
+    }
 
-        function countdown() {
-            timeLeft--;
-            document.getElementById("time-left").innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                document.getElementById("result").innerText = "⏳ Waktu habis! Coba lagi!";
-                document.getElementById("result").style.color = "#ff4444";
-                disableOptions();
-                setTimeout(nextQuestion, 2000);
-            }
+    function placeObjects() {
+      player = { x: 1, y: 1, moving: false, hasKey: false, pixelX: 1 * tileSize, pixelY: 1 * tileSize };
+      keyItem = null;
+      for (let attempt = 0; attempt < 1000; attempt++) {
+        let x = Math.floor(Math.random() * cols);
+        let y = Math.floor(Math.random() * rows);
+        if (maze[y][x] === 0 && (Math.abs(x - player.x) + Math.abs(y - player.y)) > 5) {
+          keyItem = { x, y, collected: false };
+          break;
         }
-
-        function checkAnswer(isCorrect) {
-            clearInterval(timer);
-            disableOptions(); // Disable all options after one is clicked
-            const result = document.getElementById("result");
-            if (isCorrect) {
-                result.innerText = "✅ Jawaban benar! Kamu telah melakukan debugging dengan baik!";
-                result.style.color = "#4CAF50";
-                score += 10;
-                document.getElementById("score-value").innerText = score;
-                updateProgress();
-            } else {
-                result.innerText = "❌ Jawaban salah! Coba pikirkan lagi apa solusi terbaiknya.";
-                result.style.color = "#ff4444";
-                document.getElementById("game-container").style.animation = "shake 0.5s";
-            }
-            setTimeout(nextQuestion, 2000);
+      }
+      door = { x: cols - 2, y: rows - 2, open: false };
+      enemy = null;
+      for (let attempt = 0; attempt < 1000; attempt++) {
+        let x = Math.floor(Math.random() * cols);
+        let y = Math.floor(Math.random() * rows);
+        if (maze[y][x] === 0 &&
+            (Math.abs(x - player.x) + Math.abs(y - player.y)) > 5 &&
+            (Math.abs(x - door.x) + Math.abs(y - door.y)) > 5) {
+          enemy = { x, y, pixelX: x * tileSize, pixelY: y * tileSize };
+          break;
         }
+      }
+    }
 
-        function disableOptions() {
-            const options = document.querySelectorAll(".option");
-            options.forEach(option => {
-                option.disabled = true; // Disable all options
-            });
+    function placePowerUps() {
+      powerUps = [];
+      for (let i = 0; i < level; i++) {
+        let x, y;
+        do {
+          x = Math.floor(Math.random() * cols);
+          y = Math.floor(Math.random() * rows);
+        } while (maze[y][x] !== 0 || (x === player.x && y === player.y));
+        powerUps.push({ x, y, type: Math.random() < 0.5 ? 'speed' : 'vision' });
+      }
+    }
+
+    function drawMaze() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(
+        player.pixelX + tileSize / 2,
+        player.pixelY + tileSize / 2,
+        visionRadius * tileSize,
+        0,
+        Math.PI * 2
+      );
+      ctx.clip();
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          ctx.fillStyle = maze[y][x] === 1 ? "#4a4e69" : "#22223b";
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
+      }
 
-        function updateProgress() {
-            const progressBar = document.getElementById("progress-bar");
-            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
-            progressBar.style.width = progressPercentage + "%";
+      if (keyItem && !keyItem.collected) {
+        ctx.fillStyle = "gold";
+        ctx.beginPath();
+        ctx.arc(keyItem.x * tileSize + tileSize/2, keyItem.y * tileSize + tileSize/2, tileSize/3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = door.open ? "lime" : "red";
+      ctx.fillRect(door.x * tileSize, door.y * tileSize, tileSize, tileSize);
+
+      ctx.fillStyle = "magenta";
+      ctx.fillRect(enemy.pixelX, enemy.pixelY, tileSize, tileSize);
+
+      powerUps.forEach(powerUp => {
+        ctx.fillStyle = powerUp.type === 'speed' ? 'lime' : 'yellow';
+        ctx.fillRect(powerUp.x * tileSize, powerUp.y * tileSize, tileSize, tileSize);
+      });
+
+      ctx.fillStyle = "cyan";
+      ctx.shadowColor = "cyan";
+      ctx.shadowBlur = 10;
+      ctx.fillRect(player.pixelX, player.pixelY, tileSize, tileSize);
+      ctx.restore();
+
+      drawMiniMap();
+    }
+
+    function drawMiniMap() {
+      miniCtx.clearRect(0, 0, miniMapCanvas.width, miniMapCanvas.height);
+      const scaleX = miniMapCanvas.width / cols;
+      const scaleY = miniMapCanvas.height / rows;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          miniCtx.fillStyle = maze[y][x] === 1 ? "#4a4e69" : "#22223b";
+          miniCtx.fillRect(x * scaleX, y * scaleY, scaleX, scaleY);
         }
+      }
+      if (keyItem && !keyItem.collected) {
+        miniCtx.fillStyle = "gold";
+        miniCtx.beginPath();
+        miniCtx.arc(keyItem.x * scaleX + scaleX/2, keyItem.y * scaleY + scaleY/2, scaleX/3, 0, Math.PI*2);
+        miniCtx.fill();
+      }
+      miniCtx.fillStyle = door.open ? "lime" : "red";
+      miniCtx.fillRect(door.x * scaleX, door.y * scaleY, scaleX, scaleY);
+      miniCtx.fillStyle = "magenta";
+      miniCtx.fillRect(enemy.x * scaleX, enemy.y * scaleY, scaleX, scaleY);
+      miniCtx.fillStyle = "cyan";
+      miniCtx.fillRect(player.x * scaleX, player.y * scaleY, scaleX, scaleY);
+    }
 
-        function nextQuestion() {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                document.getElementById("result").innerText = "";
-                document.getElementById("game-container").style.animation = "";
-                loadQuestion();
-            } else {
-                showGameOver();
-            }
+    function animateMovement(targetX, targetY, callback) {
+      const startX = player.pixelX;
+      const startY = player.pixelY;
+      const endX = targetX * tileSize;
+      const endY = targetY * tileSize;
+      const startTime = performance.now();
+
+      function animate(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / moveDuration, 1);
+        player.pixelX = startX + (endX - startX) * progress;
+        player.pixelY = startY + (endY - startY) * progress;
+        drawMaze();
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          player.x = targetX;
+          player.y = targetY;
+          player.pixelX = targetX * tileSize;
+          player.pixelY = targetY * tileSize;
+          callback();
         }
+      }
+      requestAnimationFrame(animate);
+    }
 
-        function showGameOver() {
-            // Hide game container
-            document.getElementById("game-container").style.display = "none";
-            // Show game over screen
-            document.getElementById("game-over").style.display = "block";
-            // Display final score
-            document.getElementById("final-score").innerText = score;
-        }
-
-        // Restart game
-        document.getElementById("restart-button").addEventListener("click", () => {
-            currentQuestionIndex = 0;
-            score = 0;
-            document.getElementById("score-value").innerText = score;
-            document.getElementById("progress-bar").style.width = "0%";
-            document.getElementById("game-over").style.display = "none";
-            document.getElementById("game-container").style.display = "block";
-            loadQuestion();
+    function handleMove(dx, dy) {
+      if (player.moving || isPaused) return;
+      const newX = player.x + dx;
+      const newY = player.y + dy;
+      if (maze[newY] && maze[newY][newX] === 0) {
+        player.moving = true;
+        moveSound.play();
+        animateMovement(newX, newY, () => {
+          player.moving = false;
+          checkCollisions();
         });
+      }
+    }
 
-        loadQuestion();
-    </script>
+    function checkCollisions() {
+      if (keyItem && !keyItem.collected && player.x === keyItem.x && player.y === keyItem.y) {
+        keyItem.collected = true;
+        player.hasKey = true;
+      }
+      if (player.hasKey) {
+        door.open = true;
+      }
+      if (door.open && player.x === door.x && player.y === door.y) {
+        document.querySelector(".message").innerText = "🎉 Kamu berhasil! ✨";
+        winSound.play();
+        calculateScore();
+        setTimeout(nextLevel, 1500);
+      }
+      if (player.x === enemy.x && player.y === enemy.y) {
+        document.querySelector(".message").innerText = "💥 Tertangkap musuh! Game Over!";
+        failSound.play();
+        setTimeout(initGame, 1500);
+      }
+      checkPowerUps();
+    }
+
+    function checkPowerUps() {
+      powerUps = powerUps.filter(powerUp => {
+        if (player.x === powerUp.x && player.y === powerUp.y) {
+          if (powerUp.type === 'speed') {
+            moveDuration = Math.max(50, moveDuration - 50);
+          } else {
+            visionRadius = Math.min(10, visionRadius + 1);
+          }
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function moveEnemy() {
+      const directions = [
+        [0, -1],
+        [0, 1],
+        [-1, 0],
+        [1, 0]
+      ];
+      let bestDir = null;
+      let minDistance = Infinity;
+
+      for (let [dx, dy] of directions) {
+        const newX = enemy.x + dx;
+        const newY = enemy.y + dy;
+        if (maze[newY] && maze[newY][newX] === 0) {
+          const distance = Math.abs(newX - player.x) + Math.abs(newY - player.y);
+          if (distance < minDistance) {
+            minDistance = distance;
+            bestDir = [dx, dy];
+          }
+        }
+      }
+
+      if (bestDir) {
+        enemy.x += bestDir[0];
+        enemy.y += bestDir[1];
+        enemy.pixelX = enemy.x * tileSize;
+        enemy.pixelY = enemy.y * tileSize;
+      }
+      drawMaze();
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      document.getElementById("timer").innerText = `Time: ${minutes}:${seconds}`;
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function calculateScore() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const baseScore = 1000;
+      const timePenalty = elapsed * 10;
+      const difficultyBonus = { easy: 100, medium: 200, hard: 300 }[difficulty];
+      score = Math.max(0, baseScore - timePenalty + difficultyBonus + (player.hasKey ? 500 : 0));
+      document.getElementById("score").innerText = `Score: ${score}`;
+      saveHighScore();
+    }
+
+    function saveHighScore() {
+      const highScore = localStorage.getItem("highScore") || 0;
+      if (score > highScore) {
+        localStorage.setItem("highScore", score);
+        document.getElementById("highScore").innerText = `High Score: ${score}`;
+      }
+    }
+
+    function updateHighScore() {
+      const highScore = localStorage.getItem("highScore") || 0;
+      document.getElementById("highScore").innerText = `High Score: ${highScore}`;
+    }
+
+    function nextLevel() {
+      level++;
+      document.querySelector(".message").innerText = `Level ${level}!`;
+      initGame();
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      backsound.muted = isMuted;
+      moveSound.muted = isMuted;
+      winSound.muted = isMuted;
+      failSound.muted = isMuted;
+      document.getElementById("muteButton").innerText = isMuted ? "🔇" : "🔊";
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById("pauseMenu").style.display = isPaused ? "block" : "none";
+      if (isPaused) {
+        stopTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    document.addEventListener("keydown", function(event) {
+      if (player.moving || isPaused) return;
+      switch (event.key) {
+        case "ArrowUp":
+          handleMove(0, -1);
+          break;
+        case "ArrowDown":
+          handleMove(0, 1);
+          break;
+        case "ArrowLeft":
+          handleMove(-1, 0);
+          break;
+        case "ArrowRight":
+          handleMove(1, 0);
+          break;
+      }
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener("touchend", (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        handleMove(dx > 0 ? 1 : -1, 0);
+      } else {
+        handleMove(0, dy > 0 ? 1 : -1);
+      }
+    });
+
+    setInterval(moveEnemy, 1000);
+    window.onload = initGame;
+    window.onresize = resizeCanvas;
+  </script>
 </body>
 </html>
